@@ -969,6 +969,10 @@ class KiaUvoApiEU(ApiImplType1):
                 "tempCode": hex_set_temp,
                 "unit": "C",
             }
+
+            headers = self._get_authenticated_headers(
+                token, vehicle.ccu_ccs2_protocol_support
+            )
         else:
             url = (
                 self.SPA_API_URL_V2
@@ -1016,11 +1020,15 @@ class KiaUvoApiEU(ApiImplType1):
                 "strgWhlHeating": int(options.heated_wheel),
             }
 
+            headers = self._get_control_headers(
+                token, vehicle
+            )
+
         _LOGGER.debug(f"{DOMAIN} - Start Climate Action Request: {payload}")
         response = requests.post(
             url,
             json=payload,
-            headers=self._get_control_headers(token, vehicle),
+            headers=headers,
         ).json()
         _LOGGER.debug(f"{DOMAIN} - Start Climate Action Response: {response}")
         _check_response_for_errors(response)
