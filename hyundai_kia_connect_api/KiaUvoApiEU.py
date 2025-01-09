@@ -984,41 +984,43 @@ class KiaUvoApiEU(ApiImplType1):
             if options.duration is None:
                 options.duration = 5
             if options.defrost is None:
-                options.defrost = False
-            if options.climate is None:
-                options.climate = True
-            if options.heating is None:
-                options.heating = 0
-
-            hex_set_temp = get_index_into_hex_temp(
-                self.temperature_range.index(options.set_temp)
-            )
+                options.defrost = 0
+            if options.front_left_seat is None:
+                options.front_left_seat = 2
+            if options.front_right_seat is None:
+                options.front_right_seat = 2
+            if options.rear_left_seat is None:
+                options.rear_left_seat = 2
+            if options.rear_right_seat is None:
+                options.rear_right_seat = 2
+            if options.heated_wheel is None:
+                options.heated_wheel = 0
+            if options.windshield_defrost is None:
+                options.windshield_defrost = False  
 
             payload = {
                 "drvSeatLoc": "R",
                 "tempUnit": "C",
                 "seatClimateInfo": {
-                    "rrSeatClimateState": 6,
-                    "drvSeatClimateState": 6,
-                    "psgSeatClimateState": 6,
-                    "rlSeatClimateState": 6,
+                    "drvSeatClimateState": int(options.front_right_seat),
+                    "psgSeatClimateState": int(options.front_left_seat),
+                    "rrSeatClimateState": int(options.rear_right_seat),
+                    "rlSeatClimateState": int(options.rear_left_seat)
                 },
-                "sideRearMirrorHeating": 1,
+                "sideRearMirrorHeating": int(options.defrost),
                 "hvacTempType": 1,
-                "hvacTemp": "22.0",
+                "hvacTemp": int(options.set_temp),
                 "command": "start",
-                "windshieldFrontDefogState": True,
-                "ignitionDuration": 5,
-                "strgWhlHeating": 1,
+                "windshieldFrontDefogState": options.windshield_defrost,
+                "ignitionDuration": int(options.duration),
+                "strgWhlHeating": int(options.heated_wheel),
             }
 
         _LOGGER.debug(f"{DOMAIN} - Start Climate Action Request: {payload}")
         response = requests.post(
             url,
             json=payload,
-            headers=self._get_authenticated_headers(
-                token, vehicle.ccu_ccs2_protocol_support
-            ),
+            headers=self._get_control_headers(token, vehicle),
         ).json()
         _LOGGER.debug(f"{DOMAIN} - Start Climate Action Response: {response}")
         _check_response_for_errors(response)
